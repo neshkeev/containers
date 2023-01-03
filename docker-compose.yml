@@ -1,0 +1,14 @@
+version: "3.6"
+networks:
+  hadoop_network:
+services:
+  hadoop:
+    hostname: hadoop
+    networks:
+      - hadoop_network
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9870:9870"
+      - "8088:8088"
