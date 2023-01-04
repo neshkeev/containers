@@ -1,0 +1,53 @@
+#! /usr/bin/env bash
+
+set -e
+
+function at_exit() {
+  stop-dfs.sh && stop-yarn.sh
+}
+
+function start() {
+  start-dfs.sh &&
+    start-yarn.sh || {
+      # The exit code shows how many errors occurred
+      # At this point it's already greater than 0,
+      # Only one error is acceptable, see below
+      [ "1" -eq "$?" ] || return 1
+
+      # YARN doesn't wait long enough for the NameNode process to start in
+      # /opt/hadoop/libexec/hadoop-functions.sh , so it says that NameNode
+      # doesn't start even though it successfully starts later, so marking
+      # it `success` is ok here.
+      return 0
+  }
+}
+
+function guess_container_id() {
+  local mount_info="/proc/1/task/1/mountinfo"
+
+  grep -q '/containers/' "${mount_info}" || {
+    echo '<CONTAINER_ID>'
+    return 0
+  }
+
+  sed -n '/\/containers\//s,.*/containers/\([^/]\{15\}\).*,\1,p' "${mount_info}" |
+    head -n 1
+}
+
+function banner() {
+  echo 'Hadoop is ready'
+
+  local cont_id=$(guess_container_id)
+
+  echo 'Please start a session: `docker exec -it' ${cont_id} 'hsh`'
+}
+
+function loop() {
+  while true ; do
+    sleep 600
+  done
+}
+
+trap at_exit EXIT
+
+start && banner && loop
