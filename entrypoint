@@ -1,10 +1,52 @@
 #! /usr/bin/env bash
 
-set -e
+function start_ssh() {
+  /usr/sbin/sshd
+}
 
-echo "export JAVA_HOME=${JAVA_HOME}" > /home/hadoop/.bashrc
-echo 'export PATH=/opt/hadoop/bin:/opt/hadoop/sbin:${PATH}' >> /home/hadoop/.bashrc
+function start_hdfs() {
+  su -l hdfs -c /opt/hadoop/sbin/start-dfs.sh
+}
 
-/usr/sbin/sshd
+function start_yarn() {
+  su -l yarn -c start-yarn-cluster
+}
 
-su -l hadoop -c start-hadoop
+function guess_container_id() {
+  local mount_info="/proc/1/task/1/mountinfo"
+
+  grep -q '/containers/' "${mount_info}" || {
+    echo '<CONTAINER_ID>'
+    return 0
+  }
+
+  sed -n '/\/containers\//s,.*/containers/\([^/]\{15\}\).*,\1,p' "${mount_info}" |
+    head -n 1
+}
+
+function banner() {
+  echo 'Hadoop is ready'
+
+  local cont_id=$(guess_container_id)
+
+  echo 'Please start a session: `docker exec -it' ${cont_id} 'hsh`'
+}
+
+function loop() {
+  while true ; do
+    sleep 600
+  done
+}
+
+function at_exit() {
+  su -l yarn -c /opt/hadoop/sbin/stop-yarn.sh
+  su -l hdfs -c /opt/hadoop/sbin/stop-dfs.sh
+}
+
+trap at_exit EXIT
+
+start_ssh &&
+  start_hdfs &&
+  start_yarn &&
+  banner &&
+  loop

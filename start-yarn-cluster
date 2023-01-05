@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+set -e
+
+/opt/hadoop/sbin/start-yarn.sh && exit 0
+
+# The exit code shows how many errors occurred.
+# At this point it's already greater than 0,
+# only one error is acceptable:
+#   YARN doesn't wait long enough for the NameNode process to start in
+#   `/opt/hadoop/libexec/hadoop-functions.sh`, so it says that NameNode
+#   doesn't start even though it successfully starts later, so marking
+#   it `success` is ok here.
+[ "1" -eq "$?" ] && exit 0

@@ -2,4 +2,6 @@
 
 set -e
 
-su -l hadoop
+USERNAME=${1:-hdfs}
+
+su -l ${USERNAME}
