@@ -13,7 +13,9 @@ FROM amazoncorretto:11.0.17 as jdk
 FROM jdk as setup-pkgs
 
 RUN yum update -y && yum install tar gzip openssh-server openssh-clients shadow-utils hostname -y && \
-  yum clean all -y
+  yum clean all -y && \
+  rm -rf /var/cache/yum && \
+  true
 
 FROM setup-pkgs as setup-users
 
@@ -75,6 +77,19 @@ RUN umask 0002 && \
   bin/hdfs namenode -format
 
 FROM setup-hadoop as setup-env
+
+LABEL com.github.neshkeev.image.author="https://github.com/neshkeev" \
+      com.github.neshkeev.image.description="Single Node Cluster Hadoop" \
+      com.github.neshkeev.image.ref.name="3.3.4-amazonlinux-2" \
+      com.github.neshkeev.image.jvm="Amazon Corretto 11.0.17" \
+      com.github.neshkeev.image.source="https://github.com/neshkeev/containers/tree/master/hadoop/single-node" \
+      com.github.neshkeev.image.title="Apache Hadoop" \
+      com.github.neshkeev.image.vendor="neshkeev" \
+      com.github.neshkeev.image.version="3.3.4"
+
+ENV OS_ARCH="${TARGETARCH:-amd64}" \
+    OS_FLAVOUR="amazonlinux-2" \
+    OS_NAME="linux"
 
 USER root
 

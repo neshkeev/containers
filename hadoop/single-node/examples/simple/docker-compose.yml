@@ -1,0 +1,13 @@
+version: "3.6"
+networks:
+  hadoop_network:
+services:
+  hadoop:
+    image: neshkeev/hadoop
+    hostname: hadoop
+    networks:
+      - hadoop_network
+    ports:
+      - "9870:9870"
+      - "8088:8088"
+      - "8042:8042"
