@@ -11,7 +11,6 @@ ARG HADOOP_TAR_ASC_URL=${HADOOP_URL}/${HADOOP_TAR_ASC}
 
 ARG HADOOP_KEYS=${HADOOP_DIR}/KEYS
 
-# FROM amazoncorretto:11.0.17 as jdk
 FROM amazoncorretto:8 as jdk
 
 FROM jdk as setup-pkgs
