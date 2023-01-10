@@ -4,11 +4,7 @@ on:
   push:
     branches: [ "master" ]
     paths:
-      - 'hadoop/single-node/**'
-  pull_request:
-    branches: [ "master" ]
-    paths:
-      - 'hadoop/single-node/**'
+      - 'hadoop/single-node/Dockerfile'
 
 jobs:
 
