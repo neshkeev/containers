@@ -18,6 +18,8 @@ FROM jdk as setup-pkgs
 RUN yum update -y && yum install which tar procps gzip openssh-server openssh-clients shadow-utils hostname -y && \
   yum clean all -y && \
   rm -rf /var/cache/yum && \
+  amazon-linux-extras install python3.8 && \
+  ln $(which python3.8) /usr/bin/python3 && \
   true
 
 FROM setup-pkgs as setup-users
