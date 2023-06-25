@@ -1,0 +1,15 @@
+version: "3.8"
+networks:
+  bash_network:
+services:
+  bash-notebook:
+    image: neshkeev/bash-notebook:latest
+    hostname: bash-notebook
+    container_name: bash-notebook
+    restart: on-failure
+    networks:
+      - bash_network
+    ports:
+      - "8888:8888"
+    environment:
+      - NOTEBOOK_ARGS=--NotebookApp.token='' --NotebookApp.password=''
