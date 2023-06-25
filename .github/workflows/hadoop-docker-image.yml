@@ -1,10 +1,10 @@
-name: Docker Single Node Hadoop Images
+name: Build Docker Containers
 
 on:
   push:
     branches: [ "master" ]
     paths:
-      - 'hadoop/single-node/Dockerfile'
+      - 'hadoop/Dockerfile'
 
 jobs:
 
@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build hadoop/single-node --file hadoop/single-node/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
     - name: Add tag to the Docker image
       run: docker tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 neshkeev/hadoop:${{matrix.hadoop-version}}
     - name: Login to Docker Hub
@@ -40,11 +40,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Hadoop jdk 1.8 Docker image
-      run: docker build hadoop/single-node --file hadoop/single-node/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
     - name: Change base image
-      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/single-node/Dockerfile
+      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/Dockerfile
     - name: Build the Hadoop jdk 11 Docker image
-      run: docker build hadoop/single-node --file hadoop/single-node/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
     - name: Add tag to the Docker image
       run: docker tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 neshkeev/hadoop:${{matrix.hadoop-version}}
     - name: Login to Docker Hub
@@ -65,9 +65,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Change base image
-      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/single-node/Dockerfile
+      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/Dockerfile
     - name: Build the Hadoop jdk 11 Docker image
-      run: docker build hadoop/single-node --file hadoop/single-node/Dockerfile --tag neshkeev/hadoop:latest
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:latest
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:

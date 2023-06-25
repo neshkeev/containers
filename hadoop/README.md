@@ -19,7 +19,7 @@ Client applications can perform basic operations using Hadoop MapReduce and the 
 There is a functional [docker-compose.yml](examples/simple/docker-compose.yml) file in the repository. Run the application using it as shown below:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/single-node/examples/simple/docker-compose.yml > docker-compose.yml
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/simple/docker-compose.yml > docker-compose.yml
 docker-compose up
 ```
 

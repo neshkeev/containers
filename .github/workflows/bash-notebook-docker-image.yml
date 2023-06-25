@@ -1,4 +1,4 @@
-name: Docker Bash notebook Images
+name: Build Docker Containers
 
 on:
   push:
