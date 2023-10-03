@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+function start_yarn() {
+  su -l yarn -c '/opt/hadoop/bin/yarn --daemon start resourcemanager'
+}
+
+function shutdown() {
+  su -l yarn -c '/opt/hadoop/bin/yarn --daemon stop resourcemanager'
+}
+
+trap shutdown EXIT
+
+start_yarn &&
+    echo "NodeManager started on $(hostname -i)" &&
+    tail -f /dev/null

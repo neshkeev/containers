@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+awk -F '.' '{ print "/rack-"$4%2}' <<<${1:-0}
