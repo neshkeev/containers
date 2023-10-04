@@ -19,7 +19,7 @@ x-template: &template
 services:
   namenode:
     <<: *template
-    image: hadoop
+    image: neshkeev/hadoop
     hostname: &name namenode
     container_name: *name
     entrypoint: /bin/namenode
@@ -32,7 +32,7 @@ services:
 
   resourcemanager:
     <<: *template
-    image: hadoop
+    image: neshkeev/hadoop
     hostname: &name resourcemanager
     container_name: *name
     entrypoint: /bin/resourcemanager
@@ -44,7 +44,7 @@ services:
   
   worker-1: &dn
     <<: *template
-    image: hadoop
+    image: neshkeev/hadoop
     hostname: &name worker-1
     container_name: *name
     entrypoint: /bin/worker
