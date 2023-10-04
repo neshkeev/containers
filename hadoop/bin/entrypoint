@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+function configure() {
+    /bin/configure
+}
+
 function start_ssh() {
   /usr/sbin/sshd
 }
@@ -41,12 +45,6 @@ function banner() {
   echo 'Please start a session: `docker exec -it' ${cont_id} 'hsh`'
 }
 
-function loop() {
-  while true ; do
-    sleep 600
-  done
-}
-
 function at_exit() {
   su -l yarn -c /opt/hadoop/sbin/stop-yarn.sh
   su -l hdfs -c /opt/hadoop/sbin/stop-dfs.sh
@@ -54,10 +52,11 @@ function at_exit() {
 
 trap at_exit EXIT
 
-start_ssh &&
-  init_known_hosts &&
-  start_hdfs &&
-  setup_hdfs &&
-  start_yarn &&
-  banner &&
-  loop
+configure &&
+    start_ssh &&
+    init_known_hosts &&
+    start_hdfs &&
+    setup_hdfs &&
+    start_yarn &&
+    banner &&
+    tail -f /dev/null

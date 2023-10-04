@@ -2,60 +2,52 @@ version: "3.6"
 networks:
   hadoop_network:
 
-x-check-ports: &check-ports ./bin/check-ports:/bin/check-ports
-
 x-template: &template
   restart: on-failure
   networks:
     - hadoop_network
+  env_file:
+    - ./config
   healthcheck: &hc
     interval: 5s
     timeout: 3s
     start_period: 10s
     retries: 20
+  volumes:
+    - ./bin/topology:/bin/topology
 
 services:
   namenode:
     <<: *template
-    image: neshkeev/hadoop
+    image: hadoop
     hostname: &name namenode
     container_name: *name
+    entrypoint: /bin/namenode
     healthcheck:
       <<: *hc
       test: bash /bin/check-ports 9870 9000
     ports:
       - "9000:9000"
       - "9870:9870"
-    volumes:
-      - *check-ports
-      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-      - ./bin/namenode:/bin/entrypoint
-      - ./bin/topology:/bin/topology
 
   resourcemanager:
     <<: *template
-    image: neshkeev/hadoop
+    image: hadoop
     hostname: &name resourcemanager
     container_name: *name
+    entrypoint: /bin/resourcemanager
     healthcheck:
       <<: *hc
       test: bash /bin/check-ports 8088
     ports:
       - "8088:8088"
-    volumes:
-      - *check-ports
-      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
-      - ./bin/resourcemanager:/bin/entrypoint
-      - ./bin/topology:/bin/topology
-
+  
   worker-1: &dn
     <<: *template
-    image: neshkeev/hadoop
+    image: hadoop
     hostname: &name worker-1
     container_name: *name
+    entrypoint: /bin/worker
     healthcheck:
       <<: *hc
       test: bash /bin/check-ports 8040 9867 18042 19864 19866
@@ -65,13 +57,6 @@ services:
       - "18042:18042"
       - "19864:19864"
       - "19866:19866"
-    volumes:
-      - *check-ports
-      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
-      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
-      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
-      - ./bin/worker:/bin/entrypoint
-      - ./bin/topology:/bin/topology
     depends_on:
       namenode:
         condition: service_healthy
@@ -81,7 +66,7 @@ services:
       X_HADOOP_DATANODE_PORT: 19866
       X_HADOOP_DATANODE_HTTP_PORT: 19864
       X_HADOOP_NODEMANAGER_WEB_PORT: 18042
-
+  
   worker-2:
     << : *dn
     hostname: &name worker-2
@@ -99,7 +84,7 @@ services:
       X_HADOOP_DATANODE_PORT: 29866
       X_HADOOP_DATANODE_HTTP_PORT: 29864
       X_HADOOP_NODEMANAGER_WEB_PORT: 28042
-
+  
   worker-3:
     << : *dn
     hostname: &name worker-3

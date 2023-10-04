@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+function configure() {
+    /bin/configure
+}
+
 function start_ssh() {
   /usr/sbin/sshd
 }
@@ -19,7 +23,8 @@ function shutdown() {
 
 trap shutdown EXIT
 
-start_ssh &&
+configure &&
+    start_ssh &&
     start_namenode &&
     echo "Namenode started on $(hostname -i)" &&
     tail -f /dev/null

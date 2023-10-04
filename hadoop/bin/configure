@@ -1,0 +1,93 @@
+#! /usr/bin/env bash
+
+set +x
+
+HADOOP_DIR=${1:-${HADOOP_HOME:-/opt/hadoop}}
+HADOOP_CONF_DIR="${HADOOP_DIR}/etc/hadoop"
+
+function log_error() {
+    echo "[ERROR]" $@ >&2
+}
+
+function format() {
+    local key=$1
+    local value=$2
+
+    [ -z "$key" ] && log_error "[format] No key found" && return 1
+
+    printf "\n\t<property>"
+    printf "\n\t\t<name>%s</name>" "${key}"
+    printf "\n\t\t<value>%s</value>" "${value}"
+    printf "\n\t</property>\n"
+}
+
+function extract_config() {
+    local prefix=$1
+
+    [ -z "$prefix" ] && log_error "[extract_config] no prefix given" && return 1
+
+    while read line; do
+        local key=$(sed "s,^${prefix}_\?\([^=]\+\)\s*=.*,\1," <<<"${line}")
+        local value=$(sed "s,^${prefix}_\?.*=\s*\(.*\),\1," <<<"${line}")
+
+        format "${key}" "${value}" || break
+    done
+}
+
+function start_file() {
+    local file_name=$1
+
+    [ -z "$file_name" ] && log_error "[make_file] no filename given" && return 1
+
+    echo -n "<configuration>" > $file_name
+}
+
+function stop_file() {
+    local file_name=$1
+
+    [ -z "$file_name" ] && log_error "[make_file] no filename given" && return 1
+
+    echo "</configuration>" >> $file_name
+}
+
+function append_file() {
+    local file_name=$1
+
+    [ -z "$file_name" ] && log_error "[make_file] no filename given" && return 1
+
+    while IFS= read line; do
+        echo "${line}" >> $file_name
+    done
+}
+
+function configure() {
+    local file_name=$1
+
+    [ -z "$file_name" ] && log_error "[configure] no prefix given" && return 1
+
+    local location="${HADOOP_CONF_DIR}/${file_name}"
+
+    echo "[INFO][configure] Configuring ${location}..."
+
+    start_file "${location}" &&
+        env | grep "${file_name^^}" | extract_config "${file_name^^}" | append_file "${location}" && 
+        stop_file "${location}"
+}
+
+function ensure_conf_dir() {
+    local path=$1
+
+    [ -z "$path" ] && log_error "[ensure_conf_dir] no path given" && return 1
+
+    mkdir -p "${path}"
+}
+
+ensure_conf_dir "${HADOOP_CONF_DIR}" &&
+    configure 'core-site.xml' &&
+    configure 'hdfs-site.xml' &&
+    configure 'hdfs-rbf-site.xml' &&
+    configure 'mapred-site.xml' &&
+    configure 'yarn-site.xml' &&
+    configure 'kms-site.xml' &&
+    configure 'httpfs-site.xml' &&
+    true

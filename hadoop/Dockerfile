@@ -81,10 +81,10 @@ USER hdfs
 
 WORKDIR /opt/hadoop
 
-COPY conf/core-site.xml etc/hadoop/core-site.xml
-COPY conf/hdfs-site.xml etc/hadoop/hdfs-site.xml
-COPY conf/mapred-site.xml etc/hadoop/mapred-site.xml
-COPY conf/yarn-site.xml etc/hadoop/yarn-site.xml
+# COPY conf/core-site.xml etc/hadoop/core-site.xml
+# COPY conf/hdfs-site.xml etc/hadoop/hdfs-site.xml
+# COPY conf/mapred-site.xml etc/hadoop/mapred-site.xml
+# COPY conf/yarn-site.xml etc/hadoop/yarn-site.xml
 
 RUN umask 0002 && \
   mkdir logs && \
@@ -109,14 +109,23 @@ ENV OS_ARCH="${TARGETARCH:-amd64}" \
 
 USER root
 
-COPY entrypoint /bin/entrypoint
-COPY start-yarn-cluster /bin/start-yarn-cluster
-COPY hsh /bin/hsh
+COPY bin/* /bin/
 
 RUN chmod a+x /bin/entrypoint && \
- chmod a+x /bin/start-yarn-cluster && \
- chmod a+x /bin/hsh && \
- true
+  chmod a+x /bin/start-yarn-cluster && \
+  chmod a+x /bin/hsh && \
+  chmod a+x /bin/configure && \
+  chmod a+x /bin/namenode && \
+  chmod a+x /bin/resourcemanager && \
+  chmod a+x /bin/worker && \
+  sed -i 's,\r,,' /bin/entrypoint && \
+  sed -i 's,\r,,' /bin/start-yarn-cluster && \
+  sed -i 's,\r,,' /bin/hsh && \
+  sed -i 's,\r,,' /bin/configure && \
+  sed -i 's,\r,,' /bin/namenode && \
+  sed -i 's,\r,,' /bin/resourcemanager && \
+  sed -i 's,\r,,' /bin/worker && \
+  true
 
 RUN echo "export JAVA_HOME=${JAVA_HOME}" > /etc/profile.d/custom_env.sh && \
   echo 'export PATH=/opt/hadoop/bin:/opt/hadoop/sbin:${PATH}' >> /etc/profile.d/custom_env.sh && \
