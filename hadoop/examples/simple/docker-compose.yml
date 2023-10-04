@@ -8,6 +8,9 @@ services:
     networks:
       - hadoop_network
     ports:
-      - "9870:9870"
-      - "8088:8088"
       - "8042:8042"
+      - "8088:8088"
+      - "9870:9870"
+      - "9864:9864"
+    env_file:
+      - ./config
