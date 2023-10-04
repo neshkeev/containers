@@ -1,5 +1,7 @@
+ARG BASE_JDK=8
+
 ARG HADOOP_NAME=hadoop
-ARG HADOOP_VERSION=3.3.4
+ARG HADOOP_VERSION=3.3.6
 ARG HADOOP_DIR=https://dlcdn.apache.org/hadoop/common
 ARG HADOOP_URL=${HADOOP_DIR}/${HADOOP_NAME}-${HADOOP_VERSION}
 
@@ -11,7 +13,7 @@ ARG HADOOP_TAR_ASC_URL=${HADOOP_URL}/${HADOOP_TAR_ASC}
 
 ARG HADOOP_KEYS=${HADOOP_DIR}/KEYS
 
-FROM amazoncorretto:8 as jdk
+FROM amazoncorretto:${BASE_JDK} as jdk
 
 FROM jdk as setup-pkgs
 

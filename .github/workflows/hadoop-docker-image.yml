@@ -35,16 +35,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        hadoop-version: ['3.3.1', '3.3.2', '3.3.3', '3.3.4', '3.3.5']
+        hadoop-version: ['3.3.1', '3.3.2', '3.3.3', '3.3.4', '3.3.5', '3.3.6']
     
     steps:
     - uses: actions/checkout@v3
     - name: Build the Hadoop jdk 1.8 Docker image
       run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
-    - name: Change base image
-      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/Dockerfile
     - name: Build the Hadoop jdk 11 Docker image
-      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}} --build-arg BASE_JDK=11
     - name: Add tag to the Docker image
       run: docker tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 neshkeev/hadoop:${{matrix.hadoop-version}}
     - name: Login to Docker Hub
@@ -64,10 +62,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Change base image
-      run: sed -i '/FROM amazoncorretto:8/s,8,11,' hadoop/Dockerfile
     - name: Build the Hadoop jdk 11 Docker image
-      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:latest
+      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:latest --build-arg BASE_JDK=11
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:

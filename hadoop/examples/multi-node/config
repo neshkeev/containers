@@ -1,8 +1,8 @@
 CORE-SITE.XML_fs.defaultFS = hdfs://namenode:9000
 CORE-SITE.XML_net.topology.script.file.name = /bin/topology
 HDFS-SITE.XML_dfs.replication = 1
-HDFS-SITE.XML_dfs.datanode.hostname = localhost
 HDFS-SITE.XML_dfs.permissions = false
+HDFS-SITE.XML_dfs.datanode.hostname = localhost
 HDFS-SITE.XML_dfs.datanode.address = '0.0.0.0:${env.DATANODE_PORT:-9866}'
 HDFS-SITE.XML_dfs.datanode.http.address = '0.0.0.0:${env.DATANODE_HTTP_PORT:-9864}'
 MAPRED-SITE.XML_mapreduce.framework.name = yarn
