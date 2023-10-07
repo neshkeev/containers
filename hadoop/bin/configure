@@ -9,6 +9,10 @@ function log_error() {
     echo "[ERROR]" $@ >&2
 }
 
+function log_warn() {
+    echo "[WARN]" $@
+}
+
 function format() {
     local key=$1
     local value=$2
@@ -37,7 +41,7 @@ function extract_config() {
 function start_file() {
     local file_name=$1
 
-    [ -z "$file_name" ] && log_error "[make_file] no filename given" && return 1
+    [ -z "$file_name" ] && log_error "[start_file] no filename given" && return 1
 
     echo -n "<configuration>" > $file_name
 }
@@ -68,6 +72,11 @@ function configure() {
     local location="${HADOOP_CONF_DIR}/${file_name}"
 
     echo "[INFO][configure] Configuring ${location}..."
+
+    [ -r "${location}" ] && grep '</name>' -q "${location}" && {
+        log_warn "[configure] File ${location} already exists. Skipping"
+        return 0
+    }
 
     start_file "${location}" &&
         env | grep "${file_name^^}" | extract_config "${file_name^^}" | append_file "${location}" && 

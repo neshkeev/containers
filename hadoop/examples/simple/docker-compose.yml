@@ -12,5 +12,11 @@ services:
       - "8088:8088"
       - "9870:9870"
       - "9864:9864"
+    healthcheck: &hc
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 20
+      test: bash /bin/check-ports 8042 8088 9000 9870 9864
     env_file:
       - ./config
