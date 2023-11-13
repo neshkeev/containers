@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+
+function remember_cwd() {
+    [ -z "${CURRENT_DIR_NAME}" ] || echo "${CURRENT_DIR_NAME##*/}" > /tmp/cwd
+}
+
+function setup_public_key() {
+    [ -z "${SSH_PUB_KEY}" ] && return 0
+
+    mkdir -p /root/.ssh
+
+    echo "${SSH_PUB_KEY}" > /root/.ssh/id_rsa.pub
+    echo "${SSH_PUB_KEY}" > /root/.ssh/authorized_keys
+
+    chmod 600 /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/id_rsa.pub
+}
+
+function authorize_ssh_host() {
+    ( ssh-keyscan $(hostname) && ssh-keyscan localhost ) > ~/.ssh/known_hosts
+    ( ssh-keyscan $(hostname -i) && ssh-keyscan 127.0.0.1 ) >> ~/.ssh/known_hosts
+}
+
+function setup_private_key() {
+    [ -z "${SSH_PRIVATE_KEY}" ] && return 0
+
+    mkdir -p /root/.ssh
+    echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
+
+    chmod 600 /root/.ssh/id_rsa
+
+    authorize_ssh_host
+}
+
+remember_cwd && \
+    rc-status && \
+    rc-service sshd start && \
+    setup_public_key && \
+    setup_private_key && \
+    tail -f /dev/null
