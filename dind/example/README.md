@@ -4,23 +4,31 @@
 ```bash
 export MSYS_NO_PATHCONV=1
 ```
-1. Download `docker-compose.yml`:
+1. Create a directory:
 ```bash
-curl -LO
+mkdir example
 ```
-2. Start the docker compose services:
+2. Enter the created directory:
+```bash
+cd example
+```
+3. Download `docker-compose.yml`:
+```bash
+curl -LO https://raw.githubusercontent.com/neshkeev/containers/master/dind/example/docker-compose.yml
+```
+4. Start the docker compose services:
 ```bash
 docker compose up -d
 ```
-3. Run the `hello-world` services from the `dind` container:
+5. Run the `hello-world` services from the `dind` container:
 ```bash
 docker compose exec -it dind docker run hello-world
 ```
-4. Check the status of the current docker compose setup from inside the `dind` container:
+6. Check the status of the current docker compose setup from inside the `dind` container:
 ```bash
 docker compose exec -it dind docker compose -f /root/example/docker-compose.yml ps
 ```
-5. Check the status of the current docker compose setup via SSH:
+7. Check the status of the current docker compose setup via SSH:
 ```bash
 docker compose exec -it dind ssh root@localhost 'docker compose -f /root/example/docker-compose.yml ps'
 ```
