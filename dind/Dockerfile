@@ -1,4 +1,4 @@
-FROM docker:stable-dind
+FROM docker:dind
 
 COPY --from=docker/compose-bin:edge /docker-compose /usr/libexec/docker/cli-plugins/docker-compose
 
@@ -15,4 +15,4 @@ RUN apk update && apk add --no-cache openrc openssh && \
     ln -sf /usr/local/bin/docker /bin/docker && \
     true
 
-CMD [ "/bin/entrypoint" ]
+ENTRYPOINT [ "/bin/entrypoint" ]
