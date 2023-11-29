@@ -32,9 +32,21 @@ function setup_private_key() {
     authorize_ssh_host
 }
 
-remember_cwd && \
-    rc-status && \
-    rc-service sshd start && \
-    setup_public_key && \
-    setup_private_key && \
+function init() {
+    local init_dir=${1:-'/init.d'}
+
+    [ -d ${init_dir} ] || return 0
+
+    for script in $(ls ${init_dir} | sort -n); do
+        chmod +x ${init_dir}/${script} &&
+        ${init_dir}/${script}
+    done
+}
+
+remember_cwd &&
+    rc-status &&
+    rc-service sshd start &&
+    setup_public_key &&
+    setup_private_key &&
+    init &&
     tail -f /dev/null

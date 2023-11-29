@@ -2,7 +2,7 @@ FROM docker:dind
 
 COPY --from=docker/compose-bin:edge /docker-compose /usr/libexec/docker/cli-plugins/docker-compose
 
-COPY --chmod=700 bin/dind-entrypoint /bin/entrypoint
+COPY --chmod=700 bin/dind-entrypoint /bin/dind-entrypoint
 
 RUN apk update && apk add --no-cache openrc openssh && \
     sed -i -e 's/^root:!:/root::/' /etc/shadow && \
@@ -13,6 +13,7 @@ RUN apk update && apk add --no-cache openrc openssh && \
     mkdir -p /run/openrc && \
     touch /run/openrc/softlevel && \
     ln -sf /usr/local/bin/docker /bin/docker && \
+    mkdir -p /init.d && \
     true
 
-ENTRYPOINT [ "/bin/entrypoint" ]
+ENTRYPOINT [ "/bin/dind-entrypoint" ]
