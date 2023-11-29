@@ -1,0 +1,35 @@
+#! /usr/bin/env sh
+
+CLUSTER_NAME=${1:-${K8S_CLUSTER_NAME:-kind}}
+
+function create_kind_cluster() {
+    local kind_cluster_name=${1:-${CLUSTER_NAME}}
+
+    kind delete cluster &&
+    kind create cluster -n ${kind_cluster_name}
+}
+
+function get_control_plane_container_id() {
+    local kind_cluster_name=${1:-${CLUSTER_NAME}}
+
+    local control_plane_name="${kind_cluster_name}-control-plane"
+
+    docker ps -f name=${control_plane_name} --format '{{.ID}}'
+}
+
+function configure_kubectl() {
+    local kind_cluster_name=${1:-${CLUSTER_NAME}}
+
+    local control_plane_id=$(get_control_plane_container_id ${kind_cluster_name})
+
+    [ -z "${control_plane_id}" ] && {
+        echo "Unable to detect the ID of a running controll plane container for the '${kind_cluster_name}' kind cluster" >&2
+        return 1
+    }
+
+    cp -v ~/.kube/config ~/.kube/localhost_config &&
+        docker cp ${control_plane_id}:/etc/kubernetes/admin.conf ~/.kube/config
+}
+
+create_kind_cluster ${CLUSTER_NAME} &&
+    configure_kubectl ${CLUSTER_NAME}

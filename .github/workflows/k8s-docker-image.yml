@@ -1,0 +1,23 @@
+name: Build Docker Containers
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'k8s/Dockerfile'
+      - 'k8s/bin/**'
+
+jobs:
+  k8s-in-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Kubernetes-In-Docker
+      run: docker build k8s --file k8s/Dockerfile --tag neshkeev/k8s
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Push k8s-in-docker to Docker Hub
+      run: docker push neshkeev/k8s:latest
