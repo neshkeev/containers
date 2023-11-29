@@ -100,4 +100,4 @@ $ kubectl get nodes
 E1129 19:26:09.617992     758 memcache.go:265] couldn't get current server API group list: Get "https://kind-control-plane:6443/api?timeout=32s": dial tcp: lookup kind-control-plane on 127.0.0.11:53: no such host
 ```
 
-**Solution**: Please make sure the network of the k8s container is named 'kind'
+**Solution**: Please make sure the network of the k8s container is named [`kind`](https://github.com/neshkeev/containers/blob/50e3bfaf616c5ef18e8e546aa4459f88d30e016d/k8s/example/docker-compose.yml#L5)
