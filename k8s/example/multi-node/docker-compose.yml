@@ -30,9 +30,9 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/root/example
+      - ./conf/config.yml:/etc/kubernetes/config.yml
     environment:
       K8S_CLUSTER_NAME: kind # optional, kind is the default value
-      CURRENT_DIR_NAME: ${PWD}
+      K8S_CONFIG_FILE: /etc/kubernetes/config.yml # optional, '/etc/kubernetes/config.yml' is the default
       SSH_PRIVATE_KEY: *private
       SSH_PUB_KEY: *pub
