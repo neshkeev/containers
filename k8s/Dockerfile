@@ -8,6 +8,9 @@ RUN /usr/local/go/bin/go install sigs.k8s.io/kind@v0.20.0 && \
     ln -sf /root/go/bin/kind /bin/kind && \
     wget -O /bin/kubectl "https://dl.k8s.io/release/$(wget -qO- https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     chmod +x /bin/kubectl && \
+    apk update && \
+    apk upgrade --no-cache && \
+    apk add helm && \
     rm -rf /usr/local/go/ && \
     mkdir -p /etc/kubernetes && \
     printf "kind: Cluster\napiVersion: kind.x-k8s.io/v1alpha4" > /etc/kubernetes/config.yml && \
