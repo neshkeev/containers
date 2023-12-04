@@ -1,9 +1,5 @@
 #!/usr/bin/env sh
 
-function remember_cwd() {
-    [ -z "${CURRENT_DIR_NAME}" ] || echo "${CURRENT_DIR_NAME##*/}" > /tmp/cwd
-}
-
 function setup_public_key() {
     [ -z "${SSH_PUB_KEY}" ] && return 0
 
@@ -32,21 +28,44 @@ function setup_private_key() {
     authorize_ssh_host
 }
 
-function init() {
+function run_init_scripts() {
     local init_dir=${1:-'/init.d'}
 
     [ -d ${init_dir} ] || return 0
 
     for script in $(ls ${init_dir} | sort -n); do
+        local script_path=${init_dir}/${script}
+        echo "Running $script_path"
+
         chmod +x ${init_dir}/${script} &&
-        ${init_dir}/${script}
+        ${init_dir}/${script} || return 1
     done
 }
 
-remember_cwd &&
-    rc-status &&
-    rc-service sshd start &&
+function start_docker() {
+    /usr/local/bin/dockerd-entrypoint.sh $@ &
+
+    while [ ! -S /var/run/docker.sock ] ; do
+        sleep 2
+    done
+
+    docker ps > /dev/null
+}
+
+function start_sshd() {
+    /usr/sbin/sshd &&
     setup_public_key &&
-    setup_private_key &&
-    init &&
-    tail -f /dev/null
+    setup_private_key
+}
+
+case "no false 0" in
+    *"${SSH_ENABLED:-true}"*)
+        /usr/local/bin/dockerd-entrypoint.sh $@
+        ;;
+    *)
+        start_docker $@ &&
+            start_sshd &&
+            run_init_scripts &&
+            tail -f /dev/null
+        ;;
+esac

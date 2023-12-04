@@ -4,7 +4,7 @@
 
 The main differences from [the official one](https://hub.docker.com/_/docker) are:
 
-- docker compose is built in
+- docker compose is built in,
 - SSH server
 
 This image might come in handy in complex docker compose environments where a dedicated docker container needs to manage the other containers. The container can connect to the dind container through SSH and and execute docker commands.
@@ -13,10 +13,6 @@ The [Dockerfile](https://github.com/neshkeev/containers/blob/master/dind/Dockerf
 
 ## Quick Start
 
-0. (Optional) If you are on Windows:
-```bash
-export MSYS_NO_PATHCONV=1
-```
 1. Create a directory:
 ```bash
 mkdir example
@@ -27,7 +23,7 @@ cd example
 ```
 3. Download `docker-compose.yml`:
 ```bash
-curl -LO https://raw.githubusercontent.com/neshkeev/containers/master/dind/example/docker-compose.yml
+curl -LO https://raw.githubusercontent.com/neshkeev/containers/master/dind/example/reuse-host-docker/docker-compose.yml
 ```
 4. Start the docker compose services:
 ```bash
@@ -39,15 +35,9 @@ docker compose exec -it dind docker run hello-world
 ```
 6. Check the status of the current docker compose setup from inside the `dind` container:
 ```bash
-docker compose exec -it dind docker compose -f /root/example/docker-compose.yml ps
+docker compose exec -it dind docker compose ps
 ```
 7. Check the status of the current docker compose setup via SSH:
 ```bash
-docker compose exec -it dind ssh root@localhost 'docker compose -f /root/example/docker-compose.yml ps'
+docker compose exec -it dind ssh root@localhost 'docker compose ps'
 ```
-
-## Known Issues
-
-### A dind container's SSH server crushes on restart
-
-**Solution**: remove the container and start it again

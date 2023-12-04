@@ -1,0 +1,38 @@
+version: "3.8"
+
+networks:
+  dind_network:
+
+x-service-template: &template
+  restart: on-failure
+  networks:
+    - dind_network
+
+x-public-key: &pub >
+  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILArDnLYVp+/JkcrJKHX5XDpFj2MdA6NmV09vh7DmVrD hello
+
+x-private-key: &private |+
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+  QyNTUxOQAAACCwKw5y2FafvyZHKySh1+Vw6RY9jHQOjZldPb4ew5lawwAAAJggO3ZdIDt2
+  XQAAAAtzc2gtZWQyNTUxOQAAACCwKw5y2FafvyZHKySh1+Vw6RY9jHQOjZldPb4ew5laww
+  AAAEA6oPfTO+faTshF1LXPJNKihyWNqL5QQejwBnFQ8UK4o7ArDnLYVp+/JkcrJKHX5XDp
+  Fj2MdA6NmV09vh7DmVrDAAAAD3NwYXJrLWV4ZXJjaXNlcwECAwQFBg==
+  -----END OPENSSH PRIVATE KEY-----
+
+services:
+  dind:
+    <<: *template
+    image: neshkeev/dind
+    hostname: &name dind
+    container_name: *name
+    # a dummy command is needed when reusing the host docker
+    command: version
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # The `COMPOSE_PROJECT_NAME` env variable is provided by Docker Compose
+      - .:/${COMPOSE_PROJECT_NAME}
+    environment:
+      SSH_ENABLED: true # Optional, an SSH Server starts by default
+      SSH_PRIVATE_KEY: *private
+      SSH_PUB_KEY: *pub

@@ -1,0 +1,74 @@
+#! /usr/bin/env sh
+
+function compose_config_file_needed() {
+    case "$@" in
+        *"-f "*)
+            return 1
+            ;;
+    esac
+}
+
+function guess_container_id() {
+  local mount_info="/proc/1/task/1/mountinfo"
+
+  awk -F '/' '/data.docker.containers/{print $5}' /proc/1/task/1/mountinfo |
+      head -n 1
+}
+
+function extract_docker_compose() {
+    local path=$1
+
+    [ -z "$path" ] && return 1
+
+    [ -f "$path" ] || [ -d "$path" ] || return 1
+
+    [ -f "$path" ] && [[ "$path" = '*/docker-compose.y*ml' ]] && {
+        echo "$path"
+        return 0
+    }
+
+    [ -f "$path" ] && return 1
+
+    local docker_compose_path="$path/docker-compose"
+
+    [ -f "${docker_compose_path}.yml" ] && {
+        echo "${docker_compose_path}.yml"
+        return 0
+    }
+
+    [ -f "${docker_compose_path}.yaml" ] && {
+        echo "${docker_compose_path}.yaml"
+        return 0
+    }
+
+    return 1
+}
+
+function guess_compose_file_path() {
+    local conainer_id=$(guess_container_id)
+
+    [ -z "${conainer_id}" ] && return 0
+
+    /usr/local/bin/docker inspect "${conainer_id}" |
+        awk -F ':' '/Binds/,/]/{print $(NF-1)}' |
+        while read line; do
+            extract_docker_compose "${line}" && return 0
+        done
+}
+
+[ -f /var/run/docker.pid ] || {
+    case "$1" in
+        compose)
+            compose_config_file_needed $@ && {
+                compose_config_file_path=$(guess_compose_file_path)
+
+                [ -n ${compose_config_file_path} ] && {
+                    shift
+                    set -- "compose -f ${compose_config_file_path}" $@
+                }
+            }
+            ;;
+    esac
+}
+
+/usr/local/bin/docker $@
