@@ -7,7 +7,7 @@ function compose_config_file_needed() {
 function guess_container_id() {
   local mount_info="/proc/1/task/1/mountinfo"
 
-  awk -F '/' '/data.docker.containers/{print $5}' /proc/1/task/1/mountinfo |
+  sed -n '/\/containers\//s,.*/containers/\([^/]\+\)/.*,\1,p' "${mount_info}" |
       head -n 1
 }
 
