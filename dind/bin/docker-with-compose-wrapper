@@ -1,11 +1,7 @@
 #! /usr/bin/env sh
 
 function compose_config_file_needed() {
-    case "$@" in
-        *"-f "*)
-            return 1
-            ;;
-    esac
+    [ ! "$2" == "-f" ]
 }
 
 function guess_container_id() {
