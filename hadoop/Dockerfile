@@ -1,4 +1,5 @@
-ARG BASE_JDK=8
+ARG JDK_VERSION=11
+ARG JDK_ARCH=amd64
 
 ARG USERNAME=hadoop
 ARG USER_GROUP=${USERNAME}
@@ -18,13 +19,19 @@ ARG HADOOP_KEYS=${HADOOP_DIR}/KEYS
 
 ARG TINI_VERSION=v0.19.0
 
-FROM amazoncorretto:${BASE_JDK} as jdk
-
-FROM jdk as setup-pkgs
+FROM amazoncorretto:${JDK_VERSION} as amd64
 
 ARG TINI_VERSION
 
 ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+
+FROM bellsoft/liberica-openjdk-centos:${JDK_VERSION}-aarch64 as arm64
+
+ARG TINI_VERSION
+
+ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/v0.19.0/tini-arm64 /tini
+
+FROM ${JDK_ARCH} as setup-pkgs
 
 RUN yum update -y && yum install which tar procps gzip shadow-utils hostname -y && \
   yum clean all -y && \
@@ -99,12 +106,13 @@ FROM setup-hadoop as setup-env
 ARG HADOOP_VERSION
 
 LABEL com.github.neshkeev.image.author="https://github.com/neshkeev" \
+      com.github.neshkeev.image.title="Apache Hadoop" \
       com.github.neshkeev.image.description="Hadoop Cluster" \
-      com.github.neshkeev.image.ref.name="${HADOOP_VERSION}-amazonlinux-2" \
+      com.github.neshkeev.image.arch="${TARGETPLATFORM}" \
+      com.github.neshkeev.image.vendor="neshkeev" \
+      com.github.neshkeev.image.os.name="$(cat /etc/os-release)" \
       com.github.neshkeev.image.jvm="$(java --version)" \
       com.github.neshkeev.image.source="https://github.com/neshkeev/containers/tree/master/hadoop" \
-      com.github.neshkeev.image.title="Apache Hadoop" \
-      com.github.neshkeev.image.vendor="neshkeev" \
       com.github.neshkeev.image.version="${HADOOP_VERSION}"
 
 ENV OS_ARCH="${TARGETARCH:-amd64}" \

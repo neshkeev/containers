@@ -20,7 +20,6 @@ services:
       retries: 20
       test: /bin/check-ports 8042 8088 9000 9870 9864
     environment:
-      ENSURE_NAMENODE_DIR: /tmp/mynamenode
       CORE-SITE.XML_fs.defaultFS: hdfs://hadoop:9000
       HDFS-SITE.XML_dfs.replication: 1
       MAPRED-SITE.XML_mapreduce.framework.name: yarn
