@@ -1,4 +1,5 @@
 ARG BASE_JDK=8
+ARG JDK_ARCH=x86_64
 
 ARG USERNAME=hadoop
 ARG USER_GROUP=${USERNAME}
@@ -18,13 +19,19 @@ ARG HADOOP_KEYS=${HADOOP_DIR}/KEYS
 
 ARG TINI_VERSION=v0.19.0
 
-FROM amazoncorretto:${BASE_JDK} as jdk
-
-FROM jdk as setup-pkgs
+FROM amazoncorretto:${BASE_JDK} as x86_64
 
 ARG TINI_VERSION
 
 ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+
+FROM bellsoft/liberica-openjdk-centos:${BASE_JDK}-aarch64 as aarch64
+
+ARG TINI_VERSION
+
+ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/v0.19.0/tini-arm64 /tini
+
+FROM ${JDK_ARCH} as setup-pkgs
 
 RUN yum update -y && yum install which tar procps gzip shadow-utils hostname -y && \
   yum clean all -y && \

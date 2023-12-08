@@ -32,31 +32,55 @@ jobs:
     - name: Push short version to Docker Hub
       run: docker push neshkeev/hadoop:${{matrix.hadoop-version}}
 
-  build-hadoop-jdk-11:
+  build-hadoop-jdk-arch-1_8-11:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         hadoop-version: ['3.3.5', '3.3.6']
-    
+        jdk-version: [ '8', '11' ]
+        arch: [ 'x86_64', 'aarch64' ]
+
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Hadoop jdk 1.8 Docker image
-      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk1.8-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
-    - name: Build the Hadoop jdk 11 Docker image
-      run: docker build hadoop --file hadoop/Dockerfile --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 --build-arg HADOOP_VERSION=${{matrix.hadoop-version}} --build-arg BASE_JDK=11
-    - name: Add tag to the Docker image
-      run: docker tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2 neshkeev/hadoop:${{matrix.hadoop-version}}
+    - name: Build the Hadoop for JDK ${{matrix.jdk-version}} for a ${{matrix.jdk-arch}} Docker image
+      run: >
+        docker build hadoop
+        --file hadoop/Dockerfile
+        --tag neshkeev/hadoop:${{matrix.hadoop-version}}-jdk${{matrix.jdk-version}}-${{matrix.arch}}
+        --build-arg BASE_JDK=${{matrix.jdk-version}}
+        --build-arg JDK_ARCH=${{matrix.arch}}
+        --build-arg HADOOP_VERSION=${{matrix.hadoop-version}}
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Push hadoop jdk 1.8 version to Docker Hub
-      run: docker push neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2
-    - name: Push hadoop jdk 11 version to Docker Hub
-      run: docker push neshkeev/hadoop:${{matrix.hadoop-version}}-jdk11-amazonlinux-2
-    - name: Push short version to Docker Hub
-      run: docker push neshkeev/hadoop:${{matrix.hadoop-version}}
+    - name: Push the Hadoop for JDK ${{matrix.jdk-version}} for a ${{matrix.jdk-arch}} Docker image
+      run: docker push neshkeev/hadoop:${{matrix.hadoop-version}}-jdk${{matrix.jdk-version}}-${{matrix.arch}}
+
+  build-latest-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk-version: [ '8', '11' ]
+        arch: [ 'x86_64', 'aarch64' ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Hadoop jdk ${{matrix.jdk-version}} for a ${{matrix.arch}} Docker image
+      run: >
+        docker build hadoop
+        --file hadoop/Dockerfile
+        --tag neshkeev/hadoop:${{matrix.jdk-version}}-${{matrix.arch}}
+        --build-arg BASE_JDK=${{matrix.jdk-version}}
+        --build-arg JDK_ARCH=${{matrix.arch}}
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Push latest version to Docker Hub
+      run: docker push neshkeev/hadoop:${{matrix.jdk-version}}-${{matrix.arch}}
 
   build-latest-hadoop-jdk-11:
     runs-on: ubuntu-latest
