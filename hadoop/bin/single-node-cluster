@@ -1,0 +1,34 @@
+#! /usr/bin/env bash
+
+function start_namenode() {
+    $HADOOP_HOME/bin/hdfs namenode
+}
+
+function start_datanode() {
+    $HADOOP_HOME/bin/hdfs datanode
+}
+
+function start_resourcemanager() {
+    $HADOOP_HOME/bin/yarn resourcemanager
+}
+
+function start_nodemanager() {
+    $HADOOP_HOME/bin/yarn nodemanager
+}
+
+function at_exit() {
+    $HADOOP_HOME/bin/yarn --daemon stop nodemanager
+    $HADOOP_HOME/bin/yarn --daemon stop resourcemanager
+    $HADOOP_HOME/bin/hdfs --daemon stop datanode
+    $HADOOP_HOME/bin/hdfs --daemon stop namenode
+}
+
+trap at_exit EXIT
+
+start_namenode &
+start_resourcemanager &
+
+sleep 5
+
+start_datanode &
+start_nodemanager

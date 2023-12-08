@@ -1,0 +1,26 @@
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+
+    <property>
+        <name>dfs.datanode.hostname</name>
+        <value>${env.DATANODE_HOST:-localhost}</value>
+    </property>
+
+    <property>
+        <name>dfs.datanode.http.address</name>
+        <value>0.0.0.0:${env.DATANODE_HTTP_PORT:9864}</value>
+    </property>
+
+    <property>
+        <name>dfs.permissions</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.datanode.address</name>
+        <value>0.0.0.0:${env.DATANODE_PORT:9866}</value>
+    </property>
+</configuration>

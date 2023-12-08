@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+function start_datanode() {
+    $HADOOP_HOME/bin/hdfs datanode
+}
+
+function start_nodemanager() {
+    $HADOOP_HOME/bin/yarn nodemanager
+}
+
+function at_exit() {
+    $HADOOP_HOME/bin/yarn --daemon stop nodemanager
+    $HADOOP_HOME/bin/hdfs --daemon stop datanode
+}
+
+trap at_exit EXIT
+
+start_datanode &
+start_nodemanager

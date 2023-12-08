@@ -1,5 +1,8 @@
 ARG BASE_JDK=8
 
+ARG USERNAME=hadoop
+ARG USER_GROUP=${USERNAME}
+
 ARG HADOOP_NAME=hadoop
 ARG HADOOP_VERSION=3.3.6
 ARG HADOOP_DIR=https://dlcdn.apache.org/hadoop/common
@@ -13,43 +16,38 @@ ARG HADOOP_TAR_ASC_URL=${HADOOP_URL}/${HADOOP_TAR_ASC}
 
 ARG HADOOP_KEYS=${HADOOP_DIR}/KEYS
 
+ARG TINI_VERSION=v0.19.0
+
 FROM amazoncorretto:${BASE_JDK} as jdk
 
 FROM jdk as setup-pkgs
 
-RUN yum update -y && yum install which tar procps gzip openssh-server openssh-clients shadow-utils hostname -y && \
+ARG TINI_VERSION
+
+ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+
+RUN yum update -y && yum install which tar procps gzip shadow-utils hostname -y && \
   yum clean all -y && \
   rm -rf /var/cache/yum && \
-  amazon-linux-extras install python3.8 && \
-  ln $(which python3.8) /usr/bin/python3 && \
   true
 
 FROM setup-pkgs as setup-users
 
-RUN groupadd -r hadoop && \
-  useradd -m -g hadoop hdfs && \
-  useradd -m -g hadoop yarn && \
+ARG USERNAME
+ARG USER_GROUP
+
+RUN echo ${USER_GROUP}
+RUN echo ${USERNAME}
+
+RUN groupadd -g 1000 -r ${USER_GROUP} && \
+  useradd -u 1000 -m -g ${USER_GROUP} ${USERNAME}  && \
   true
 
-RUN chown -R hdfs:hadoop /opt
+RUN chown -R ${USERNAME}:${USER_GROUP} /opt
 
-FROM setup-users as setup-ssh
+FROM setup-users as get-hadoop
 
-RUN ssh-keygen -A
-
-USER yarn
-RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
-  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
-  chmod 0600 ~/.ssh/authorized_keys && \
-  true
-
-USER hdfs
-RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
-  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
-  chmod 0600 ~/.ssh/authorized_keys && \
-  true
-
-FROM setup-ssh as get-hadoop
+ARG USERNAME
 
 ARG HADOOP_VERSION
 ARG HADOOP_NAME
@@ -64,42 +62,46 @@ ARG HADOOP_URL
 
 ARG HADOOP_KEYS
 
-USER hdfs
+USER ${USERNAME}
 
-WORKDIR /opt
-
-RUN curl --fail -LO ${HADOOP_KEYS} && \
-  gpg --import KEYS && \
-  curl --fail -LO ${HADOOP_TAR_URL} && \
-  curl --fail -LO ${HADOOP_TAR_ASC_URL} && \
-  gpg --verify ${HADOOP_TAR_ASC} ${HADOOP_TAR} &&\
-  printf "\033[32mExtracting ${HADOOP_TAR} to $(pwd) \033[0m" && \
-  tar --checkpoint=10000 --checkpoint-action=dot -xf ${HADOOP_TAR} --transform "s,${HADOOP_NAME}-${HADOOP_VERSION},${HADOOP_NAME}," && \
-  rm -v ${HADOOP_TAR} KEYS ${HADOOP_TAR_ASC}
+RUN curl --fail -Lo /opt/KEYS ${HADOOP_KEYS} && \
+  # FIXME `|| true` should be temporary until https://issues.apache.org/jira/browse/HADOOP-19006 is fixed
+  gpg --import /opt/KEYS || true && \
+  curl --fail -Lo /opt/${HADOOP_TAR} ${HADOOP_TAR_URL} && \
+  curl --fail -Lo /opt/${HADOOP_TAR_ASC} ${HADOOP_TAR_ASC_URL} && \
+  gpg --verify /opt/${HADOOP_TAR_ASC} /opt/${HADOOP_TAR} && \
+  printf "\033[32mExtracting ${HADOOP_TAR} to /opt \033[0m" && \
+  tar -C /opt --checkpoint=10000 --checkpoint-action=dot -xf /opt/${HADOOP_TAR} --transform "s,${HADOOP_NAME}-${HADOOP_VERSION},${HADOOP_NAME}," && \
+  rm -v /opt/${HADOOP_TAR} /opt/KEYS /opt/${HADOOP_TAR_ASC} && \
+  true
 
 FROM get-hadoop as setup-hadoop
 
-USER hdfs
+ARG USERNAME
+ARG USER_GROUP
 
-WORKDIR /opt/hadoop
+COPY --chmod=700 --chown=${USERNAME}:${USER_GROUP} bin/* /bin/
 
-# COPY conf/core-site.xml etc/hadoop/core-site.xml
-# COPY conf/hdfs-site.xml etc/hadoop/hdfs-site.xml
-# COPY conf/mapred-site.xml etc/hadoop/mapred-site.xml
-# COPY conf/yarn-site.xml etc/hadoop/yarn-site.xml
-
-RUN umask 0002 && \
-  mkdir logs && \
-  bin/hdfs namenode -format
+RUN mkdir /opt/configmanager && \
+  cp /bin/ConfigManager.java /opt/configmanager && \
+  javac /opt/configmanager/ConfigManager.java && \
+  jar cfe /opt/configmanager/hadoop-starter-config-manager.jar opt.configmanager.ConfigManager /opt/configmanager/*.class && \
+  echo '<configuration/>' > /opt/hadoop/etc/hadoop/core-site.xml && \
+  echo '<configuration/>' > /opt/hadoop/etc/hadoop/hdfs-site.xml && \
+  echo '<configuration/>' > /opt/hadoop/etc/hadoop/yarn-site.xml && \
+  echo '<configuration/>' > /opt/hadoop/etc/hadoop/mapred-site.xml && \
+  mkdir /opt/hadoop/logs && \
+  /opt/hadoop/bin/hdfs namenode -format && \
+  true
 
 FROM setup-hadoop as setup-env
 
 ARG HADOOP_VERSION
 
 LABEL com.github.neshkeev.image.author="https://github.com/neshkeev" \
-      com.github.neshkeev.image.description="Single Node Cluster Hadoop" \
+      com.github.neshkeev.image.description="Hadoop Cluster" \
       com.github.neshkeev.image.ref.name="${HADOOP_VERSION}-amazonlinux-2" \
-      com.github.neshkeev.image.jvm="Amazon Corretto 1.8" \
+      com.github.neshkeev.image.jvm="$(java --version)" \
       com.github.neshkeev.image.source="https://github.com/neshkeev/containers/tree/master/hadoop" \
       com.github.neshkeev.image.title="Apache Hadoop" \
       com.github.neshkeev.image.vendor="neshkeev" \
@@ -109,29 +111,10 @@ ENV OS_ARCH="${TARGETARCH:-amd64}" \
     OS_FLAVOUR="amazonlinux-2" \
     OS_NAME="linux"
 
-USER root
+ENV HADOOP_HOME=/opt/${HADOOP_NAME}
+ENV PATH=/opt/${HADOOP_NAME}/bin:${PATH}
 
-COPY bin/* /bin/
+WORKDIR /opt/${HADOOP_NAME}
 
-RUN chmod a+x /bin/entrypoint && \
-  chmod a+x /bin/start-yarn-cluster && \
-  chmod a+x /bin/hsh && \
-  chmod a+x /bin/configure && \
-  chmod a+x /bin/namenode && \
-  chmod a+x /bin/resourcemanager && \
-  chmod a+x /bin/worker && \
-  sed -i 's,\r,,' /bin/entrypoint && \
-  sed -i 's,\r,,' /bin/start-yarn-cluster && \
-  sed -i 's,\r,,' /bin/hsh && \
-  sed -i 's,\r,,' /bin/configure && \
-  sed -i 's,\r,,' /bin/namenode && \
-  sed -i 's,\r,,' /bin/resourcemanager && \
-  sed -i 's,\r,,' /bin/worker && \
-  true
-
-RUN echo "export JAVA_HOME=${JAVA_HOME}" > /etc/profile.d/custom_env.sh && \
-  echo 'export PATH=/opt/hadoop/bin:/opt/hadoop/sbin:${PATH}' >> /etc/profile.d/custom_env.sh && \
-  echo 'umask 0002' >> /etc/profile.d/custom_env.sh && \
-  true
-
-ENTRYPOINT [ "/bin/entrypoint" ]
+ENTRYPOINT [ "/tini", "--", "/bin/entrypoint"]
+CMD [ "/bin/single-node-cluster" ]

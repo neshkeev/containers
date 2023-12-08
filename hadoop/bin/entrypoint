@@ -1,68 +1,7 @@
 #! /usr/bin/env bash
 
-function pre_hook() {
-    [ ! -f /usr/bin/before_start ] && return 0
-    bash /usr/bin/before_start
-}
-
 function configure() {
-    /bin/configure
+    java -jar /opt/configmanager/hadoop-starter-config-manager.jar
 }
 
-function start_ssh() {
-  /usr/sbin/sshd
-}
-
-function init_known_hosts() {
-  su -l hdfs -c '( ssh-keyscan localhost && ssh-keyscan $(hostname -i) && ssh-keyscan $(hostname) && ssh-keyscan 0.0.0.0 ) > ~/.ssh/known_hosts'
-  su -l yarn -c '( ssh-keyscan localhost && ssh-keyscan $(hostname -i) && ssh-keyscan $(hostname) && ssh-keyscan 0.0.0.0 ) > ~/.ssh/known_hosts'
-}
-
-function start_hdfs() {
-  su -l hdfs -c /opt/hadoop/sbin/start-dfs.sh
-}
-
-function setup_hdfs() {
-  su -l hdfs -c 'hdfs dfs -mkdir -p /user/hdfs'
-}
-
-function start_yarn() {
-  su -l yarn -c start-yarn-cluster
-}
-
-function guess_container_id() {
-  local mount_info="/proc/1/task/1/mountinfo"
-
-  grep -q '/containers/' "${mount_info}" || {
-    echo '<CONTAINER_ID>'
-    return 0
-  }
-
-  sed -n '/\/containers\//s,.*/containers/\([^/]\{15\}\).*,\1,p' "${mount_info}" |
-    head -n 1
-}
-
-function banner() {
-  echo 'Hadoop is ready'
-
-  local cont_id=$(guess_container_id)
-
-  echo 'Please start a session: `docker exec -it' ${cont_id} 'hsh`'
-}
-
-function at_exit() {
-  su -l yarn -c /opt/hadoop/sbin/stop-yarn.sh
-  su -l hdfs -c /opt/hadoop/sbin/stop-dfs.sh
-}
-
-trap at_exit EXIT
-
-pre_hook &&
-    configure &&
-    start_ssh &&
-    init_known_hosts &&
-    start_hdfs &&
-    setup_hdfs &&
-    start_yarn &&
-    banner &&
-    tail -f /dev/null
+configure && $@

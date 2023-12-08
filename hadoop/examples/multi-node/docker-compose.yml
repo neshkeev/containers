@@ -3,6 +3,7 @@ networks:
   hadoop_network:
 
 x-template: &template
+  image: neshkeev/hadoop
   restart: on-failure
   networks:
     - hadoop_network
@@ -19,10 +20,11 @@ x-template: &template
 services:
   namenode:
     <<: *template
-    image: neshkeev/hadoop
     hostname: &name namenode
     container_name: *name
-    entrypoint: /bin/namenode
+    command:
+      - hdfs
+      - namenode
     healthcheck:
       <<: *hc
       test: bash /bin/check-ports 9870 9000
@@ -32,10 +34,11 @@ services:
 
   resourcemanager:
     <<: *template
-    image: neshkeev/hadoop
     hostname: &name resourcemanager
     container_name: *name
-    entrypoint: /bin/resourcemanager
+    command:
+      - yarn
+      - resourcemanager
     healthcheck:
       <<: *hc
       test: bash /bin/check-ports 8088
@@ -44,28 +47,29 @@ services:
   
   worker-1: &dn
     <<: *template
-    image: neshkeev/hadoop
     hostname: &name worker-1
     container_name: *name
-    entrypoint: /bin/worker
+    command:
+      - bash
+      - /bin/worker
     healthcheck:
       <<: *hc
-      test: bash /bin/check-ports 8040 9867 18042 19864 19866
+      test: bash /bin/check-ports 18042 19864 19866
     ports:
-      - "18040:8040"
-      - "19867:9867"
       - "18042:18042"
       - "19864:19864"
-      - "19866:19866"
     depends_on:
       namenode:
         condition: service_healthy
       resourcemanager:
         condition: service_healthy
     environment:
-      X_HADOOP_DATANODE_PORT: 19866
-      X_HADOOP_DATANODE_HTTP_PORT: 19864
-      X_HADOOP_NODEMANAGER_WEB_PORT: 18042
+      DATANODE_PORT: 19866
+      DATANODE_HTTP_PORT: 19864
+      NODEMANAGER_WEB_PORT: 18042
+    volumes:
+      - ./bin/topology:/bin/topology
+      - ./bin/worker:/bin/worker
   
   worker-2:
     << : *dn
@@ -73,32 +77,26 @@ services:
     container_name: *name
     healthcheck:
       <<: *hc
-      test: bash /bin/check-ports 8040 9867 28042 29864 29866
+      test: bash /bin/check-ports 28042 29864 29866
     ports:
-      - "28040:8040"
-      - "29867:9867"
       - "28042:28042"
       - "29864:29864"
-      - "29866:29866"
     environment:
-      X_HADOOP_DATANODE_PORT: 29866
-      X_HADOOP_DATANODE_HTTP_PORT: 29864
-      X_HADOOP_NODEMANAGER_WEB_PORT: 28042
-  
+      DATANODE_PORT: 29866
+      DATANODE_HTTP_PORT: 29864
+      NODEMANAGER_WEB_PORT: 28042
+
   worker-3:
     << : *dn
     hostname: &name worker-3
     container_name: *name
     healthcheck:
       <<: *hc
-      test: bash /bin/check-ports 8040 9867 38042 39864 39866
+      test: bash /bin/check-ports 38042 39864 39866
     ports:
-      - "38040:8040"
-      - "39867:9867"
       - "38042:38042"
       - "39864:39864"
-      - "39866:39866"
     environment:
-      X_HADOOP_DATANODE_PORT: 39866
-      X_HADOOP_DATANODE_HTTP_PORT: 39864
-      X_HADOOP_NODEMANAGER_WEB_PORT: 38042
+      DATANODE_PORT: 39866
+      DATANODE_HTTP_PORT: 39864
+      NODEMANAGER_WEB_PORT: 38042

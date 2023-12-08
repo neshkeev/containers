@@ -1,16 +1,23 @@
-CORE-SITE.XML_fs.defaultFS = hdfs://localhost:9000
-HDFS-SITE.XML_dfs.replication = 1
-HDFS-SITE.XML_dfs.permissions = false
-HDFS-SITE.XML_dfs.datanode.hostname = localhost
-HDFS-SITE.XML_dfs.datanode.address = 0.0.0.0:9866
-HDFS-SITE.XML_dfs.datanode.http.address = 0.0.0.0:9864
+CORE-SITE.XML_fs.defaultFS=hdfs://hadoop:9000
 
-MAPRED-SITE.XML_mapreduce.framework.name = yarn
-MAPRED-SITE.XML_mapreduce.application.classpath = '$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*'
+HDFS-SITE.XML_dfs.replication=1
 
-YARN-SITE.XML_yarn.nodemanager.aux-services = mapreduce_shuffle
-YARN-SITE.XML_yarn.nodemanager.env-whitelist = JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
-YARN-SITE.XML_yarn.resourcemanager.hostname = localhost
-YARN-SITE.XML_yarn.resourcemanager.webapp.address = 0.0.0.0:8088
-YARN-SITE.XML_yarn.nodemanager.hostname = localhost
-YARN-SITE.XML_yarn.nodemanager.webapp.address = 0.0.0.0:8042
+MAPRED-SITE.XML_mapreduce.framework.name=yarn
+MAPRED-SITE.XML_mapreduce.application.classpath='$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*'
+
+YARN-SITE.XML_yarn.nodemanager.aux-services=mapreduce_shuffle
+YARN-SITE.XML_yarn.nodemanager.env-whitelist=JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
+
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.maximum-applications=10000
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.maximum-am-resource-percent=0.1
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.resource-calculator=org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.queues=default
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.capacity=100
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.user-limit-factor=1
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.maximum-capacity=100
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.state=RUNNING
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.acl_submit_applications=*
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.root.default.acl_administer_queue=*
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.node-locality-delay=40
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.queue-mappings=
+CAPACITY-SCHEDULER.XML_yarn.scheduler.capacity.queue-mappings-override.enable=false

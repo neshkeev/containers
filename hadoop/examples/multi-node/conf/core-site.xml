@@ -1,0 +1,14 @@
+<configuration>
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://hadoop:9000</value>
+	</property>
+	<property>
+		<name>hadoop.prometheus.endpoint.enabled</name>
+		<value>true</value>
+	</property>
+    <property>
+        <name>net.topology.script.file.name</name>
+        <value>/bin/topology</value>
+    </property>
+</configuration>

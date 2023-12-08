@@ -5,6 +5,7 @@ services:
   hadoop:
     image: neshkeev/hadoop
     hostname: hadoop
+    container_name: hadoop
     networks:
       - hadoop_network
     ports:
@@ -17,6 +18,12 @@ services:
       timeout: 3s
       start_period: 10s
       retries: 20
-      test: bash /bin/check-ports 8042 8088 9000 9870 9864
-    env_file:
-      - ./config
+      test: /bin/check-ports 8042 8088 9000 9870 9864
+    environment:
+      ENSURE_NAMENODE_DIR: /tmp/mynamenode
+      CORE-SITE.XML_fs.defaultFS: hdfs://hadoop:9000
+      HDFS-SITE.XML_dfs.replication: 1
+      MAPRED-SITE.XML_mapreduce.framework.name: yarn
+      MAPRED-SITE.XML_mapreduce.application.classpath: '$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*'
+      YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle
+      YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
