@@ -11,6 +11,7 @@ services:
     ports:
       - "8042:8042"
       - "8088:8088"
+      - "9099:9099"
       - "9870:9870"
       - "9864:9864"
     healthcheck: &hc
@@ -22,7 +23,19 @@ services:
     environment:
       CORE-SITE.XML_fs.defaultFS: hdfs://hadoop:9000
       HDFS-SITE.XML_dfs.replication: 1
+      HDFS-SITE.XML_dfs.permissions: false
+      HDFS-SITE.XML_dfs.datanode.hostname: localhost
       MAPRED-SITE.XML_mapreduce.framework.name: yarn
-      MAPRED-SITE.XML_mapreduce.application.classpath: '$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*'
+      MAPRED-SITE.XML_mapreduce.application.classpath: $$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*
       YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle
       YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
+      YARN-SITE.XML_yarn.web-proxy.address: localhost:9099
+      YARN-SITE.XML_yarn.web-proxy.bind-host: 0.0.0.0
+      YARN-SITE.XML_yarn.resourcemanager.webapp.address: host.docker.internal:8088
+      YARN-SITE.XML_yarn.resourcemanager.bind-host: 0.0.0.0
+        # YARN-SITE.XML_yarn.resourcemanager.resource-tracker.address: hadoop:8031
+        # YARN-SITE.XML_yarn.resourcemanager.admin.address: hadoop:8033
+        # YARN-SITE.XML_yarn.resourcemanager.address: hadoop:8032
+        # YARN-SITE.XML_yarn.resourcemanager.scheduler.address: hadoop:8030
+      YARN-SITE.XML_yarn.nodemanager.webapp.address: host.docker.internal:8042
+      YARN-SITE.XML_yarn.nodemanager.bind-host: 0.0.0.0
