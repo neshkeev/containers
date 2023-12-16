@@ -1,0 +1,98 @@
+version: "3"
+networks:
+  hadoop_network:
+
+services:
+  hadoop:
+    image: neshkeev/hadoop
+    hostname: hadoop
+    container_name: hadoop
+    networks:
+      - hadoop_network
+    ports:
+      - "8042:8042"
+      - "8088:8088"
+      - "9870:9870"
+      - "9864:9864"
+      - "10020:10020"
+      - "19888:19888"
+      - "58042:58042"
+      - "58088:58088"
+      - "59870:59870"
+      - "59864:59864"
+      - "59888:59888"
+    healthcheck: &hc
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 20
+      test: /bin/check-ports 8042 8088 9000 9870 9864 10020 19888
+    environment:
+      CORE-SITE.XML_fs.defaultFS: hdfs://hadoop:9000
+
+      HDFS-SITE.XML_dfs.replication: 1
+      HDFS-SITE.XML_dfs.permissions: false
+      HDFS-SITE.XML_dfs.datanode.hostname: localhost
+
+      MAPRED-SITE.XML_mapreduce.framework.name: yarn
+      MAPRED-SITE.XML_mapreduce.application.classpath: $$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*
+
+      MAPRED-SITE.XML_mapreduce.jobhistory.address: host.docker.internal:10020
+      MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address: host.docker.internal:19888
+      MAPRED-SITE.XML_mapreduce.jobhistory.bind-host: 0.0.0.0
+
+      YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle
+      YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
+
+      YARN-SITE.XML_yarn.resourcemanager.webapp.address: host.docker.internal:8088
+      YARN-SITE.XML_yarn.resourcemanager.bind-host: 0.0.0.0
+
+      HDFS_NAMENODE_OPTS: >
+        -XX:StartFlightRecording=filename=namenode.jfr
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=59870
+        -Dcom.sun.management.jmxremote.rmi.port=59870
+        -Dcom.sun.management.jmxremote.local.only=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=127.0.0.1
+
+      HDFS_DATANODE_OPTS: >
+        -XX:StartFlightRecording=filename=datanode.jfr
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=59864
+        -Dcom.sun.management.jmxremote.rmi.port=59864
+        -Dcom.sun.management.jmxremote.local.only=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=127.0.0.1
+
+      YARN_RESOURCEMANAGER_OPTS: >
+        -XX:StartFlightRecording=filename=resourcemanager.jfr
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=58088
+        -Dcom.sun.management.jmxremote.rmi.port=58088
+        -Dcom.sun.management.jmxremote.local.only=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=127.0.0.1
+
+      YARN_NODEMANAGER_OPTS: >
+        -XX:StartFlightRecording=filename=nodemanager.jfr
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=58042
+        -Dcom.sun.management.jmxremote.rmi.port=58042
+        -Dcom.sun.management.jmxremote.local.only=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=127.0.0.1
+
+      MAPRED_HISTORYSERVER_OPTS: >
+        -XX:StartFlightRecording=filename=historyserver.jfr
+        -Dcom.sun.management.jmxremote
+        -Dcom.sun.management.jmxremote.port=59888
+        -Dcom.sun.management.jmxremote.rmi.port=59888
+        -Dcom.sun.management.jmxremote.local.only=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Djava.rmi.server.hostname=127.0.0.1

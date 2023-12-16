@@ -33,7 +33,7 @@ ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/downl
 
 FROM ${JDK_ARCH} as setup-pkgs
 
-RUN yum update -y && yum install which tar procps gzip shadow-utils hostname -y && \
+RUN yum update -y && yum install which tar procps gzip shadow-utils hostname iproute -y && \
   yum clean all -y && \
   rm -rf /var/cache/yum && \
   true

@@ -1,12 +1,19 @@
 # Multi Node Cluster
 
-This example demonstrates how to deploy a three-node cluster with Docker Compose.
+This example demonstrates how to deploy a Hadoop cluster with Docker Compose that contains:
+
+- NameNode,
+- DataNode,
+- ResourceManager,
+- NodeManager,
+- ProxyServer,
+- HistoryServer.
 
 ## HDFS demo
 
 1. Enter the namenode docker container:
 ```bash
-docker compose exec -it namenode`
+docker compose exec -it namenode bash
 ```
 2. Execute the following commands:
 ```bash
@@ -19,9 +26,9 @@ hdfs dfs -cat /user/hadoop/hello.txt
 
 ## YARN demo
 
-1. Enter the namenode docker container:
+1. Enter the resourcemanager docker container:
 ```bash
-docker compose exec -it namenode`
+docker compose exec -it resourcemanager bash
 ```
 2. Execute the following commands:
 ```bash
@@ -33,7 +40,7 @@ yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar pi 10 15
 
 After the cluster is up and running feel free to explore it:
 
-- Namenode: [http://localhost:9870](http://localhost:9870)
+- NameNode: [http://localhost:9870](http://localhost:9870)
 - DataNode:
     1. [http://localhost:19864](http://localhost:19864)
     1. [http://localhost:29864](http://localhost:29864)
@@ -43,3 +50,4 @@ After the cluster is up and running feel free to explore it:
     1. [http://localhost:18042](http://localhost:18042)
     1. [http://localhost:28042](http://localhost:28042)
     1. [http://localhost:38042](http://localhost:38042)
+- HistoryServer: [http://localhost:19888](http://localhost:19888/jobhistory)

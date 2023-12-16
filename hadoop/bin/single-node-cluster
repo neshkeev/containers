@@ -16,11 +16,16 @@ function start_nodemanager() {
     $HADOOP_HOME/bin/yarn nodemanager
 }
 
+function start_historyserver() {
+    $HADOOP_HOME/bin/mapred historyserver
+}
+
 function at_exit() {
     $HADOOP_HOME/bin/yarn --daemon stop nodemanager
     $HADOOP_HOME/bin/yarn --daemon stop resourcemanager
     $HADOOP_HOME/bin/hdfs --daemon stop datanode
     $HADOOP_HOME/bin/hdfs --daemon stop namenode
+    $HADOOP_HOME/bin/mapred --daemon stop historyserver
 }
 
 trap at_exit EXIT
@@ -30,5 +35,6 @@ start_resourcemanager &
 
 sleep 5
 
+start_historyserver &
 start_datanode &
 start_nodemanager

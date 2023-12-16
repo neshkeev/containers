@@ -1,0 +1,153 @@
+version: "3.6"
+networks:
+  hadoop_network:
+
+x-template: &template
+  image: neshkeev/hadoop
+  restart: on-failure
+  networks:
+    - hadoop_network
+  healthcheck: &hc
+    interval: 5s
+    timeout: 3s
+    start_period: 10s
+    retries: 20
+  environment: &env
+    CORE-SITE.XML_fs.defaultFS: hdfs://namenode:9000
+
+    HDFS-SITE.XML_dfs.replication: 3
+    HDFS-SITE.XML_dfs.permissions: false
+    HDFS-SITE.XML_dfs.datanode.hostname: localhost
+
+    MAPRED-SITE.XML_mapreduce.framework.name: yarn
+    MAPRED-SITE.XML_mapreduce.application.classpath: $$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*
+
+    MAPRED-SITE.XML_mapreduce.jobhistory.address: host.docker.internal:10020
+    MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address: host.docker.internal:19888
+    MAPRED-SITE.XML_mapreduce.jobhistory.bind-host: 0.0.0.0
+
+    YARN-SITE.XML_yarn.resourcemanager.hostname: resourcemanager
+    YARN-SITE.XML_yarn.resourcemanager.webapp.address: host.docker.internal:8088
+    YARN-SITE.XML_yarn.resourcemanager.bind-host: 0.0.0.0
+
+    YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle
+    YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
+
+    YARN-SITE.XML_yarn.web-proxy.address: host.docker.internal:9099
+    YARN-SITE.XML_yarn.web-proxy.bind-host: 0.0.0.0
+
+services:
+  namenode:
+    <<: *template
+    hostname: &name namenode
+    container_name: *name
+    command:
+      - hdfs
+      - namenode
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 9870 9000
+    ports:
+      - "9000:9000"
+      - "9870:9870"
+
+  historyserver:
+    <<: *template
+    hostname: &name historyserver
+    container_name: *name
+    command:
+      - mapred
+      - historyserver
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 10020 19888
+    ports:
+      - "19888:19888"
+
+  resourcemanager:
+    <<: *template
+    hostname: &name resourcemanager
+    container_name: *name
+    command:
+      - yarn
+      - resourcemanager
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 8088
+    ports:
+      - "8088:8088"
+
+  proxyserver:
+    <<: *template
+    hostname: &name proxyserver
+    container_name: *name
+    command:
+      - yarn
+      - proxyserver
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 9099
+    ports:
+      - "9099:9099"
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+
+  worker-1: &dn
+    <<: *template
+    hostname: &name worker-1
+    container_name: *name
+    command:
+      - bash
+      - /bin/worker
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 18042 19864 19866
+    ports:
+      - "18042:18042"
+      - "19864:19864"
+    depends_on:
+      namenode:
+        condition: service_healthy
+      resourcemanager:
+        condition: service_healthy
+    environment:
+      <<: *env
+      HDFS-SITE.XML_dfs.datanode.http.address: 0.0.0.0:19864
+      HDFS-SITE.XML_dfs.datanode.address: 0.0.0.0:19866
+
+      YARN-SITE.XML_yarn.nodemanager.webapp.address: $${yarn.nodemanager.hostname}:18042
+
+  worker-2:
+    << : *dn
+    hostname: &name worker-2
+    container_name: *name
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 28042 29864 29866
+    ports:
+      - "28042:28042"
+      - "29864:29864"
+    environment:
+      <<: *env
+      HDFS-SITE.XML_dfs.datanode.http.address: 0.0.0.0:29864
+      HDFS-SITE.XML_dfs.datanode.address: 0.0.0.0:29866
+
+      YARN-SITE.XML_yarn.nodemanager.webapp.address: $${yarn.nodemanager.hostname}:28042
+
+  worker-3:
+    << : *dn
+    hostname: &name worker-3
+    container_name: *name
+    healthcheck:
+      <<: *hc
+      test: bash /bin/check-ports 38042 39864 39866
+    ports:
+      - "38042:38042"
+      - "39864:39864"
+    environment:
+      <<: *env
+      HDFS-SITE.XML_dfs.datanode.http.address: 0.0.0.0:39864
+      HDFS-SITE.XML_dfs.datanode.address: 0.0.0.0:39866
+
+      YARN-SITE.XML_yarn.nodemanager.webapp.address: $${yarn.nodemanager.hostname}:38042

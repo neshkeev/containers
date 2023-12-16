@@ -4,7 +4,8 @@ networks:
 
 services:
   hadoop:
-    image: neshkeev/hadoop
+    image: neshkeev/hadoop:arm64
+    platform: linux/arm64 # Optional if you are running Mac M1 another ARM based Computer
     hostname: hadoop
     container_name: hadoop
     networks:
@@ -36,8 +37,8 @@ services:
       MAPRED-SITE.XML_mapreduce.jobhistory.webapp.address: host.docker.internal:19888
       MAPRED-SITE.XML_mapreduce.jobhistory.bind-host: 0.0.0.0
 
-      YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle
-      YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME
+      YARN-SITE.XML_yarn.nodemanager.aux-services: mapreduce_shuffle # g
+      YARN-SITE.XML_yarn.nodemanager.env-whitelist: JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME # g
 
       YARN-SITE.XML_yarn.resourcemanager.webapp.address: host.docker.internal:8088
       YARN-SITE.XML_yarn.resourcemanager.bind-host: 0.0.0.0
