@@ -1,4 +1,4 @@
-# Single Node Cluster Hadoop packaged by neshkeev
+# A Hadoop Docker image packaged by neshkeev
 
 **DISCLAMER**:
 
@@ -36,7 +36,7 @@ In order to cofigure a Hadoop cluster there are two options that can be used in 
 
 ### Mount config files
 
-One can mount prepared cofig files:
+One can mount prepared config files:
 
 - `core-site.xml` -> `/opt/hadoop/etc/hadoop/core-site.xml`
 - `hdfs-site.xml` -> `/opt/hadoop/etc/hadoop/hdfs-site.xml`,
@@ -48,9 +48,12 @@ One can mount prepared cofig files:
 
 Existing config files can be amended with environment variables.
 
-In order to amend a config properties one needs to construct a variable name to match the following pattern: `PREFIX` + config.name.
+In order to amend a config properties one needs to construct an environment variable which name matches the following pattern: `PREFIX` + config.name.
 
-For example, the value for `fs.defaultFS` should be stored in the `CORE-SITE.XML_fs.defaultFS` like this: `CORE-SITE.XML_fs.defaultFS=hdfs://namenode:9000`
+For example, the value for `fs.defaultFS` should be stored in the `CORE-SITE.XML_fs.defaultFS` environment variable like this:
+```
+CORE-SITE.XML_fs.defaultFS=hdfs://namenode:9000
+```
 
 The prefix is derived from the file the config belongs to. See the examples' [docker-compose.yml](examples/simple/docker-compose.yml#L26) files for references.
 
@@ -60,7 +63,7 @@ The values from environment variables takes precedence over the mounted config f
 
 ## Examples
 
-### Compute Pi on a single node cluster
+### Compute Pi on a single node Hadoop cluster
 
 1. Download [`docker-compose.yml`](https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/simple/docker-compose.yml):
 ```bash
@@ -81,12 +84,20 @@ yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar pi 10 15
 5. Explore the workload on the web interface:
     - NameNode: [`http://localhost:9870/explorer.html`](http://localhost:9870/explorer.html)
     - ResourceManager: [`http://localhost:8088`](http://localhost:8088)
+6. Exit the `hadoop` docker container:
+```
+exit
+```
+7. Stop the cluster:
+```
+docker compose down
+```
 
-### Run a Map Reduce task on a single node cluster
+### Run a Map Reduce task on a multi-node Hadoop cluster
 
 Run the `grep` example that comes with the Hadoop distribution by default:
 
-1. Download [`docker-compose.yml`](https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/simple/docker-compose.yml):
+1. Download [`docker-compose.yml`](https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/multi-node-cluster/docker-compose.yml):
 ```bash
 curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/multi-node-cluster/docker-compose.yml > docker-compose.yml
 ```
@@ -94,51 +105,63 @@ curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/ex
 ```bash
 docker compose up
 ```
-3. Enter the `hadoop` docker compose service:
+3. Wait until all the services are `healthy`:
+```bash
+docker compose ps
+```
+4. Enter the `hadoop` docker compose service:
 ```bash
 docker compose exec -it hadoop bash
 ```
-4. Create a directory for the user that is required to execute MapReduce jobs:
+5. Create a directory for the user that is required to execute MapReduce jobs:
 ```bash
 hdfs dfs -mkdir -p /user/hadoop
 ```
-5. Create the input directory:
+6. Create the input directory:
 ```bash
 hdfs dfs -mkdir -p input
 ```
-6. Copy the input files into HDFS:
+7. Copy the input files into HDFS:
 ```bash
 hdfs dfs -put -f /opt/hadoop/etc/hadoop/*.xml input
 ```
-7. Start the Map Reduce job:
+8. Start the Map Reduce job:
 ```
 hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar grep input output 'dfs[a-z.]+'
 ```
-8. Explore the workload on the web interface:
+9. Explore the workload on the web interface:
     - NameNode: [`http://localhost:9870/explorer.html`](http://localhost:9870/explorer.html)
     - ResourceManager: [`http://localhost:8088`](http://localhost:8088)
-9. Review the results:
+10. Review the results:
 ```bash
 hdfs dfs -cat output/*
 ```
-10. Copy the results to the local file system:
+11. Copy the results to the local file system:
 ```bash
 hdfs dfs -get output ~/output
 ```
-11. Analyze the results:
+12. Analyze the results:
 ```bash
 find ~/output
 ```
-12. Remove the results:
+13. Remove the results:
 ```
 hdfs dfs -rm -r output
+```
+14. Exit the `resourcemanager` docker container:
+```
+exit
+```
+15. Stop the cluster:
+```
+docker compose down
 ```
 
 ### Connect to Hadoop Services Over JMX
 
 1. Start a Hadoop Cluster
 ```bash
-curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/example/jmx/docker-compose.yml > docker-compose.yml
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/jmx/docker-compose.yml > docker-compose.yml
 docker compose up -d
 ```
 2. Open jconsole (or visualvm):

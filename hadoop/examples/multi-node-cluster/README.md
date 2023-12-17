@@ -11,30 +11,56 @@ This example demonstrates how to deploy a Hadoop cluster with Docker Compose tha
 
 ## HDFS demo
 
-1. Enter the namenode docker container:
+0. Start a Hadoop cluster:
+```bash
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/multi-node-cluster/docker-compose.yml > docker-compose.yml
+docker compose up -d
+```
+1. Wait until all the services are healthy:
+```bash
+docker compose ps
+```
+2. Enter the namenode docker container:
 ```bash
 docker compose exec -it namenode bash
 ```
-2. Execute the following commands:
+3. Execute the following commands:
 ```bash
 hdfs dfs -mkdir -p /user/hadoop
 echo 'Hello, World!' > /tmp/hello.txt
 hdfs dfs -put /tmp/hello.txt /user/hadoop
 hdfs dfs -cat /user/hadoop/hello.txt
 ```
-3. Explore the `hello.txt` file on HDFS from your WebBrowser: [http://localhost:9870/explorer.html#/user/hadoop](http://localhost:9870/explorer.html#/user/hadoop)
+4. Check the `hello.txt` file on HDFS from your WebBrowser: [http://localhost:9870/explorer.html#/user/hadoop](http://localhost:9870/explorer.html#/user/hadoop)
+5. Stop the Hadoop cluster:
+```bash
+docker compose down
+```
 
 ## YARN demo
 
-1. Enter the resourcemanager docker container:
+0. Start a Hadoop cluster:
+```bash
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/multi-node-cluster/docker-compose.yml > docker-compose.yml
+docker compose up -d
+```
+1. Wait until all the services are healthy:
+```bash
+docker compose ps
+```
+2. Enter the resourcemanager docker container:
 ```bash
 docker compose exec -it resourcemanager bash
 ```
-2. Execute the following commands:
+3. Execute the following commands:
 ```bash
 yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar pi 10 15
 ```
-3. Explore the application from your WebBrowser: [http://localhost:8088](http://localhost:8088)
+4. Explore the application from your WebBrowser: [http://localhost:8088](http://localhost:8088)
+5. Stop the Hadoop cluster:
+```bash
+docker compose down
+```
 
 ## Web Links
 

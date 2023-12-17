@@ -5,7 +5,7 @@
 The example starts a Single Node Cluster Hadoop:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/example/simple/docker-compose.yml > docker-compose.yml
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/simple/docker-compose.yml > docker-compose.yml
 docker compose up -d
 ```
 

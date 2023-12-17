@@ -9,14 +9,14 @@ Starting from the version `3.3.4` Apache Hadoop can work on ARM-based processors
 The example starts a Single Node Hadoop Cluster on for `arm64/aarch64`:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/example/arm64/docker-compose.yml > docker-compose.yml
+curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/hadoop/examples/arm64/docker-compose.yml > docker-compose.yml
 docker compose up -d
 ```
 
 ## Work with HDFS
 
 ```bash
-docker compose exec -it hadoop
+docker compose exec -it hadoop bash
 hdfs dfs -mkdir -p /user/hadoop
 echo 'Hello, World!' > /tmp/hello.txt
 hdfs dfs -put /tmp/hello.txt /user/hadoop
@@ -27,7 +27,7 @@ Use Namenode UI to browse the HDFS filesystem: [http://localhost:9870/explorer.h
 ## Work with YARN
 
 ```bash
-docker compose exec -it hadoop
+docker compose exec -it hadoop bash
 yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar pi 10 15
 ```
 
