@@ -1,5 +1,4 @@
 ARG JDK_VERSION=11
-ARG JDK_ARCH=amd64
 
 ARG USERNAME=hadoop
 ARG USER_GROUP=${USERNAME}
@@ -31,7 +30,7 @@ ARG TINI_VERSION
 
 ADD --chown=1000:1000 --chmod=700 https://github.com/krallin/tini/releases/download/v0.19.0/tini-arm64 /tini
 
-FROM ${JDK_ARCH} as setup-pkgs
+FROM ${TARGETARCH} as setup-pkgs
 
 RUN yum update -y && yum install which tar procps gzip shadow-utils hostname iproute -y && \
   yum clean all -y && \
