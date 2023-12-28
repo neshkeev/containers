@@ -6,18 +6,26 @@ on:
     paths:
       - 'dind/Dockerfile'
       - 'dind/bin/**'
+      - '.github/workflows/dind-docker-image.yml'
 
 jobs:
   dind:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Docker-In-Docker image
-      run: docker build dind --file dind/Dockerfile --tag neshkeev/dind
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Push dind to Docker Hub
-      run: docker push neshkeev/dind:latest
+      - uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker-In-Docker Docker image
+        run: >
+          docker buildx build dind --push
+          --platform=linux/amd64,linux/arm64
+          --file dind/Dockerfile
+          --tag neshkeev/dind:latest
