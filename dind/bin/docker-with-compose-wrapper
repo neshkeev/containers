@@ -67,4 +67,4 @@ function guess_compose_file_path() {
     esac
 }
 
-/usr/local/bin/docker $@
+/usr/local/bin/docker "$@"
