@@ -2,7 +2,6 @@ version: "3.8"
 
 networks:
   k8s_network:
-    name: kind # This name is important because the control-plane container starts with this network
 
 x-service-template: &template
   restart: on-failure
@@ -28,8 +27,6 @@ services:
     hostname: &name k8s
     container_name: *name
     privileged: true
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       SSH_PRIVATE_KEY: *private
       SSH_PUB_KEY: *pub

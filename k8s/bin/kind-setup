@@ -20,6 +20,9 @@ function get_control_plane_container_id() {
 }
 
 function configure_kubectl() {
+    # No need any extra configuration when starting docker from inside the docker container.
+    [ -f /var/run/docker.pid ] && return 0
+
     local kind_cluster_name=${1:-${CLUSTER_NAME}}
 
     local control_plane_id=$(get_control_plane_container_id ${kind_cluster_name})

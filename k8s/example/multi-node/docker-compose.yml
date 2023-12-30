@@ -2,7 +2,8 @@ version: "3.8"
 
 networks:
   k8s_network:
-    name: kind # This name is important because the control-plane container starts with this network
+    # The 'kind' network name is important, because the control-plane container starts with this network
+    name: kind
 
 x-service-template: &template
   restart: on-failure
@@ -32,7 +33,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./conf/config.yml:/etc/kubernetes/config.yml
     environment:
-      K8S_CLUSTER_NAME: kind # optional, kind is the default value
-      K8S_CONFIG_FILE: /etc/kubernetes/config.yml # optional, '/etc/kubernetes/config.yml' is the default
+      K8S_CLUSTER_NAME: kind # optional, 'kind' is the default value
+      K8S_CONFIG_FILE: /etc/kubernetes/config.yml # optional, '/etc/kubernetes/config.yml' is the default value
       SSH_PRIVATE_KEY: *private
       SSH_PUB_KEY: *pub

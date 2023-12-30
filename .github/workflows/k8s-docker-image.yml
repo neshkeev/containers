@@ -6,18 +6,26 @@ on:
     paths:
       - 'k8s/Dockerfile'
       - 'k8s/bin/**'
+      - '.github/workflows/k8s-docker-image.yml'
 
 jobs:
   k8s-in-docker:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Kubernetes-In-Docker
-      run: docker build k8s --file k8s/Dockerfile --tag neshkeev/k8s
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Push k8s-in-docker to Docker Hub
-      run: docker push neshkeev/k8s:latest
+      - uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Kubernetes-In-Docker Docker image
+        run: >
+          docker buildx build k8s --push
+          --platform=linux/amd64,linux/arm64
+          --file k8s/Dockerfile
+          --tag neshkeev/k8s:latest

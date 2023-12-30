@@ -11,7 +11,7 @@ There is a functional [docker-compose.yml](examples/docker-compose.yml) file in 
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/neshkeev/containers/master/bash-notebook/example/docker-compose.yml > docker-compose.yml
-docker-compose up
+docker compose up
 curl http://localhost:8888
 ```
 

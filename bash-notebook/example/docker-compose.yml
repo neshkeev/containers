@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  compose-network:
+    name: compose-network
+
+services:
+  notebook:
+    image: neshkeev/bash-notebook
+    hostname: &name notebook
+    container_name: *name
+    restart: on-failure
+    networks:
+      - compose-network
+    ports:
+      - "8888:8888"
+    environment:
+      NOTEBOOK_ARGS: --NotebookApp.token='' --NotebookApp.password=''
+      RESTARTABLE: yes
