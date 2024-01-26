@@ -60,7 +60,9 @@ function guess_compose_file_path() {
 
                 [ -n ${compose_config_file_path} ] && {
                     shift
-                    set -- "compose -f ${compose_config_file_path}" $@
+                    set -- "${compose_config_file_path}" "$@"
+                    set -- "-f" "$@"
+                    set -- "compose" "$@"
                 }
             }
             ;;
